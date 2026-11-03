@@ -415,6 +415,7 @@ let player = {
     isReloading: false,
     keyXPressed: false,
     keyDownPressed: false,
+    joystickDown: false,
     isDucking: false,
     duckTimer: 0,
     
@@ -479,7 +480,8 @@ function jump() {
         return;
     }
 
-    if (!player.isDead && !player.isDucking && (player.grounded || player.jumpCount < player.maxJumps)) {
+    // Do not jump if currently ducking or holding down
+    if (!player.isDead && !player.isDucking && !player.keyDownPressed && !player.joystickDown && (player.grounded || player.jumpCount < player.maxJumps)) {
         player.dy = player.jumpPower;
         player.jumpCount++;
         player.grounded = false;
@@ -490,10 +492,6 @@ function jump() {
 function setDuck(value) {
     if (player.isDead) return;
     player.keyDownPressed = value;
-
-    if (!gameOver && player.grounded) {
-        player.isDucking = value;
-    }
 }
 
 // SHOOT
@@ -557,6 +555,7 @@ window.addEventListener("keyup", function(e) {
 
 window.addEventListener("blur", function() {
     setDuck(false);
+    player.joystickDown = false;
     keys = {};
 });
 
@@ -610,12 +609,12 @@ function handleJoystickMove(clientX, clientY) {
             jump();
             joystickJumpTriggered = true;
         }
-        setDuck(false);
+        player.joystickDown = false;
     } else if (deltaY > 18) {
-        setDuck(true);
+        player.joystickDown = true;
         joystickJumpTriggered = false;
     } else {
-        setDuck(false);
+        player.joystickDown = false;
         joystickJumpTriggered = false;
     }
 }
@@ -626,7 +625,7 @@ function handleJoystickEnd() {
     player.moveDir = 0;
     player.joystickIntensity = 0;
     joystickJumpTriggered = false;
-    setDuck(false);
+    player.joystickDown = false;
 }
 
 joystickContainer.addEventListener("pointerdown", e => {
@@ -746,6 +745,7 @@ function resetGame() {
 
     player.keyXPressed = false;
     player.keyDownPressed = false;
+    player.joystickDown = false;
     player.isDucking = false;
     player.duckTimer = 0;
 
@@ -853,6 +853,36 @@ function update() {
         player.x = LOGICAL_WIDTH - player.width - 20;
     }
 
+    // GROUND & DUCK HEIGHT CALCULATION FIRST (Strictly persistent when holding duck or joystick down)
+    if (player.grounded) {
+        if (player.keyDownPressed || player.joystickDown) {
+            player.isDucking = true;
+            player.height = player.duckHeight;
+        } else {
+            player.isDucking = false;
+            player.height = player.normalHeight;
+        }
+
+        player.y = player.floorY - player.height;
+        player.dy = 0;
+        player.jumpCount = 0;
+    } else {
+        player.isDucking = false;
+        player.height = player.normalHeight;
+
+        player.dy += player.gravity;
+        player.y += player.dy;
+
+        let targetGroundY = player.floorY - player.height;
+
+        if (player.y >= targetGroundY) {
+            player.y = targetGroundY;
+            player.grounded = true;
+            player.dy = 0;
+            player.jumpCount = 0;
+        }
+    }
+
     let previousState = player.animState;
 
     // STANCE & ANIMATION STATE DECISION
@@ -925,36 +955,6 @@ function update() {
         if (player.reloadTimer <= 0) {
             player.ammo = player.maxAmmo;
             player.isReloading = false;
-        }
-    }
-
-    // GROUND & DUCK HEIGHT CALCULATION
-    if (player.grounded) {
-        if (player.keyDownPressed) {
-            player.isDucking = true;
-            player.height = player.duckHeight;
-        } else {
-            player.isDucking = false;
-            player.height = player.normalHeight;
-        }
-
-        player.y = player.floorY - player.height;
-        player.dy = 0;
-        player.jumpCount = 0;
-    } else {
-        player.isDucking = false;
-        player.height = player.normalHeight;
-
-        player.dy += player.gravity;
-        player.y += player.dy;
-
-        let targetGroundY = player.floorY - player.height;
-
-        if (player.y >= targetGroundY) {
-            player.y = targetGroundY;
-            player.grounded = true;
-            player.dy = 0;
-            player.jumpCount = 0;
         }
     }
 
