@@ -21,6 +21,7 @@ html, body {
     color: white;
     font-family: Arial, sans-serif;
     touch-action: none;
+    user-select: none;
 }
 
 #gameContainer {
@@ -94,65 +95,116 @@ canvas {
 #mobileControls {
     position: absolute;
     z-index: 8;
-    bottom: max(12px, env(safe-area-inset-bottom));
+    bottom: max(16px, env(safe-area-inset-bottom));
     left: 0;
     right: 0;
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
-    padding: 0 16px;
+    padding: 0 24px;
     pointer-events: none;
 }
 
-/* JOYSTICK AREA */
+/* SMALLER TRANSPARENT ANALOG JOYSTICK */
 #joystickContainer {
-    width: 120px;
-    height: 120px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    width: 100px;
+    height: 100px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1.5px solid rgba(255, 255, 255, 0.15);
     border-radius: 50%;
     position: relative;
     pointer-events: auto;
     touch-action: none;
+    backdrop-filter: blur(1px);
 }
 
 #joystickStick {
-    width: 50px;
-    height: 50px;
-    background: rgba(245, 196, 81, 0.8);
-    border: 2px solid #fff;
+    width: 42px;
+    height: 42px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1.5px solid rgba(255, 255, 255, 0.4);
     border-radius: 50%;
     position: absolute;
-    top: 35px;
-    left: 35px;
+    top: 28px;
+    left: 28px;
     pointer-events: none;
+    backdrop-filter: blur(2px);
 }
 
-/* ACTION BUTTONS */
+/* SMALLER PLAYSTATION ACTION BUTTONS DIAMOND LAYOUT */
 .action-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
+    position: relative;
+    width: 115px;
+    height: 115px;
     pointer-events: auto;
 }
 
 .control-btn {
-    width: 68px;
-    height: 62px;
-    border: 2px solid rgba(255, 255, 255, 0.4);
-    border-radius: 13px;
-    background: rgba(23, 36, 59, 0.9);
-    color: white;
-    font-weight: bold;
-    font-size: 12px;
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    background: radial-gradient(circle, #252b36 0%, #0f131a 100%);
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.7), inset 0 2px 3px rgba(255, 255, 255, 0.2);
     touch-action: none;
-    user-select: none;
-    -webkit-user-select: none;
+    transition: transform 0.08s ease, background 0.08s ease, box-shadow 0.08s ease;
 }
 
+.ps-symbol {
+    font-size: 14px;
+    font-weight: 900;
+    line-height: 1;
+    text-shadow: 0 0 6px currentColor;
+}
+
+.ps-label {
+    font-size: 6px;
+    font-weight: bold;
+    color: #cbd5e1;
+    letter-spacing: 0.5px;
+    margin-top: 1px;
+}
+
+/* PS BUTTON POSITIONS & SYMBOL COLORS */
+#shootBtn {
+    top: 0;
+    left: 37.5px;
+    border-color: rgba(34, 197, 94, 0.6);
+}
+#shootBtn .ps-symbol { color: #22c55e; } /* Triangle (Green) */
+
+#duckBtn {
+    top: 37.5px;
+    right: 0;
+    border-color: rgba(239, 68, 68, 0.6);
+}
+#duckBtn .ps-symbol { color: #ef4444; } /* Circle (Red) */
+
+#jumpBtn {
+    bottom: 0;
+    left: 37.5px;
+    border-color: rgba(59, 130, 246, 0.6);
+}
+#jumpBtn .ps-symbol { color: #3b82f6; } /* Cross (Blue) */
+
+#reloadBtn {
+    top: 37.5px;
+    left: 0;
+    border-color: rgba(236, 72, 153, 0.6);
+}
+#reloadBtn .ps-symbol { color: #ec4899; } /* Square (Pink) */
+
 .control-btn:active, .control-btn.active {
-    background: #a56c24;
-    transform: scale(0.95);
+    transform: scale(0.90);
+    background: radial-gradient(circle, #3b4556 0%, #1a202c 100%);
+    border-color: #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.9), inset 0 1px 2px rgba(255, 255, 255, 0.4);
 }
 
 #rotateMessage {
@@ -189,23 +241,34 @@ canvas {
         font-size: 11px;
     }
     #mobileControls {
-        padding: 0 9px;
-        bottom: max(9px, env(safe-area-inset-bottom));
+        padding: 0 14px;
+        bottom: max(10px, env(safe-area-inset-bottom));
+    }
+    .action-grid {
+        width: 105px;
+        height: 105px;
     }
     .control-btn {
-        width: 58px;
-        height: 54px;
-        font-size: 10px;
+        width: 36px;
+        height: 36px;
     }
+    .ps-symbol { font-size: 13px; }
+    .ps-label { font-size: 6px; }
+
+    #shootBtn { left: 34.5px; }
+    #duckBtn { top: 34.5px; }
+    #jumpBtn { left: 34.5px; }
+    #reloadBtn { top: 34.5px; }
+
     #joystickContainer {
-        width: 100px;
-        height: 100px;
+        width: 90px;
+        height: 90px;
     }
     #joystickStick {
-        width: 40px;
-        height: 40px;
-        top: 30px;
-        left: 30px;
+        width: 38px;
+        height: 38px;
+        top: 24px;
+        left: 24px;
     }
     #fullscreenBtn {
         padding: 8px;
@@ -237,12 +300,24 @@ canvas {
             <div id="joystickStick"></div>
         </div>
 
-        <!-- ACTION BUTTONS -->
+        <!-- PLAYSTATION CONTROLLER BUTTONS -->
         <div class="action-grid">
-            <button class="control-btn" id="jumpBtn">JUMP</button>
-            <button class="control-btn" id="duckBtn">DUCK</button>
-            <button class="control-btn" id="shootBtn">SHOOT</button>
-            <button class="control-btn" id="reloadBtn">RELOAD</button>
+            <button class="control-btn" id="shootBtn">
+                <span class="ps-symbol">△</span>
+                <span class="ps-label">SHOOT</span>
+            </button>
+            <button class="control-btn" id="duckBtn">
+                <span class="ps-symbol">○</span>
+                <span class="ps-label">DUCK</span>
+            </button>
+            <button class="control-btn" id="jumpBtn">
+                <span class="ps-symbol">✕</span>
+                <span class="ps-label">JUMP</span>
+            </button>
+            <button class="control-btn" id="reloadBtn">
+                <span class="ps-symbol">□</span>
+                <span class="ps-label">RELOAD</span>
+            </button>
         </div>
     </div>
 
@@ -391,6 +466,7 @@ enemyImg.onload = () => { enemyLoaded = true; };
 
 let gameStarted = true;
 
+
 let player = {
     x: 90,
     y: 190,
@@ -413,11 +489,9 @@ let player = {
     maxAmmo: 5,
     reloadTimer: 0,
     isReloading: false,
-    keyXPressed: false,
     keyDownPressed: false,
     joystickDown: false,
     isDucking: false,
-    duckTimer: 0,
     
     animState: "idle",
     currentFrame: 0,
@@ -480,7 +554,6 @@ function jump() {
         return;
     }
 
-    // Do not jump if currently ducking or holding down
     if (!player.isDead && !player.isDucking && !player.keyDownPressed && !player.joystickDown && (player.grounded || player.jumpCount < player.maxJumps)) {
         player.dy = player.jumpPower;
         player.jumpCount++;
@@ -496,7 +569,11 @@ function setDuck(value) {
 
 // SHOOT
 function shoot() {
-    if (gameOver || player.isDead || player.isReloading || player.ammo <= 0) return;
+    if (gameOver) {
+        resetGame();
+        return;
+    }
+    if (player.isDead || player.isReloading || player.ammo <= 0) return;
 
     let bulletY = player.isDucking ? player.y + 15 : player.y + 30;
 
@@ -559,29 +636,22 @@ window.addEventListener("blur", function() {
     keys = {};
 });
 
-// ANALOG JOYSTICK WITH JUMP & DUCK SUPPORT
+// ANALOG JOYSTICK (WITH MULTI-TOUCH)
 const joystickContainer = document.getElementById("joystickContainer");
 const joystickStick = document.getElementById("joystickStick");
-let joystickActive = false;
-let joystickStartX = 0;
-let joystickStartY = 0;
+let activeJoystickTouchId = null;
+let joystickCenterX = 0;
+let joystickCenterY = 0;
 let joystickJumpTriggered = false;
 
-function handleJoystickStart(clientX, clientY) {
-    if (player.isDead) return;
-    joystickActive = true;
+function updateJoystickPosition(clientX, clientY) {
     const rect = joystickContainer.getBoundingClientRect();
-    joystickStartX = rect.left + rect.width / 2;
-    joystickStartY = rect.top + rect.height / 2;
-    joystickJumpTriggered = false;
-}
+    joystickCenterX = rect.left + rect.width / 2;
+    joystickCenterY = rect.top + rect.height / 2;
 
-function handleJoystickMove(clientX, clientY) {
-    if (!joystickActive || player.isDead) return;
-    
-    let deltaX = clientX - joystickStartX;
-    let deltaY = clientY - joystickStartY;
-    let maxDistance = 35;
+    let deltaX = clientX - joystickCenterX;
+    let deltaY = clientY - joystickCenterY;
+    let maxDistance = 30;
     
     let distance = Math.hypot(deltaX, deltaY);
     if (distance > maxDistance) {
@@ -590,27 +660,24 @@ function handleJoystickMove(clientX, clientY) {
     }
 
     joystickStick.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
-
     player.joystickIntensity = Math.abs(deltaX) / maxDistance;
 
-    // HORIZONTAL MOVEMENT
-    if (deltaX > 8) {
+    if (deltaX > 6) {
         player.moveDir = 1;
-    } else if (deltaX < -8) {
+    } else if (deltaX < -6) {
         player.moveDir = -1;
     } else {
         player.moveDir = 0;
         player.joystickIntensity = 0;
     }
 
-    // VERTICAL INPUTS: PUSH UP TO JUMP, PUSH DOWN TO DUCK/CROUCH
-    if (deltaY < -18) {
+    if (deltaY < -14) {
         if (!joystickJumpTriggered) {
             jump();
             joystickJumpTriggered = true;
         }
         player.joystickDown = false;
-    } else if (deltaY > 18) {
+    } else if (deltaY > 14) {
         player.joystickDown = true;
         joystickJumpTriggered = false;
     } else {
@@ -619,26 +686,35 @@ function handleJoystickMove(clientX, clientY) {
     }
 }
 
-function handleJoystickEnd() {
-    joystickActive = false;
-    joystickStick.style.transform = `translate(0px, 0px)`;
-    player.moveDir = 0;
-    player.joystickIntensity = 0;
-    joystickJumpTriggered = false;
-    player.joystickDown = false;
-}
-
 joystickContainer.addEventListener("pointerdown", e => {
     e.preventDefault();
-    handleJoystickStart(e.clientX, e.clientY);
+    if (activeJoystickTouchId === null) {
+        activeJoystickTouchId = e.pointerId;
+        try { joystickContainer.setPointerCapture(e.pointerId); } catch (err) {}
+        updateJoystickPosition(e.clientX, e.clientY);
+    }
 });
 
-window.addEventListener("pointermove", e => {
-    if (joystickActive) handleJoystickMove(e.clientX, e.clientY);
+joystickContainer.addEventListener("pointermove", e => {
+    if (e.pointerId === activeJoystickTouchId) {
+        updateJoystickPosition(e.clientX, e.clientY);
+    }
 });
 
-window.addEventListener("pointerup", () => handleJoystickEnd());
-window.addEventListener("pointercancel", () => handleJoystickEnd());
+function releaseJoystick(e) {
+    if (e.pointerId === activeJoystickTouchId) {
+        activeJoystickTouchId = null;
+        joystickStick.style.transform = `translate(0px, 0px)`;
+        player.moveDir = 0;
+        player.joystickIntensity = 0;
+        joystickJumpTriggered = false;
+        player.joystickDown = false;
+    }
+}
+
+joystickContainer.addEventListener("pointerup", releaseJoystick);
+joystickContainer.addEventListener("pointercancel", releaseJoystick);
+joystickContainer.addEventListener("lostpointercapture", releaseJoystick);
 
 // MOBILE ACTION BUTTONS
 function bindButton(id, onDown, onUp) {
@@ -743,11 +819,9 @@ function resetGame() {
     player.isReloading = false;
     player.reloadTimer = 0;
 
-    player.keyXPressed = false;
     player.keyDownPressed = false;
     player.joystickDown = false;
     player.isDucking = false;
-    player.duckTimer = 0;
 
     player.x = 90;
     player.height = player.normalHeight;
@@ -853,7 +927,6 @@ function update() {
         player.x = LOGICAL_WIDTH - player.width - 20;
     }
 
-    // GROUND & DUCK HEIGHT CALCULATION FIRST (Strictly persistent when holding duck or joystick down)
     if (player.grounded) {
         if (player.keyDownPressed || player.joystickDown) {
             player.isDucking = true;
@@ -885,7 +958,6 @@ function update() {
 
     let previousState = player.animState;
 
-    // STANCE & ANIMATION STATE DECISION
     if (player.isHurt) {
         player.animState = "hurt";
     } else if (player.isDucking && player.isShooting) {
@@ -1167,7 +1239,7 @@ function draw() {
 
         ctx.fillStyle = "#FFF";
         ctx.font = "16px Arial";
-        ctx.fillText("Press SPACEBAR or JUMP to Restart", 275, 170);
+        ctx.fillText("Press SPACEBAR or JUMP to Restart", 260, 170);
     }
 }
 
