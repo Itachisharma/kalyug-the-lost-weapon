@@ -653,7 +653,7 @@ function handleAction() {
     if (player.isReloading || player.ammo <= 0) return;
 
     // Bullet Y offset adjusted: slightly lower during crouchShoot (+10px) and aligned for standing (+16px)
-    let bulletY = player.isDucking ? player.y + 13.5 : player.y + 16.3;
+    let bulletY = player.isDucking ? player.y + 13.5 : player.y + 16.8;
 
     bullets.push({
         x: player.x + player.width,
