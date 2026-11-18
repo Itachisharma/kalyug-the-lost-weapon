@@ -1410,3 +1410,260 @@ checkPhoneOrientation();
 
 </body>
 </html>
+
+<!-- KALYUG RADIO COMPONENT
+     Radio-only add-on. Copy the <style>, radio markup, and script into your page.
+     Uses official Akashvani / Prasar Bharati live streams.
+-->
+<style>
+  #kalyugRadioToggle {
+    position: fixed;
+    z-index: 40;
+    top: 64px;
+    right: 12px;
+    border: 1px solid rgba(255,255,255,.28);
+    border-radius: 10px;
+    padding: 10px 13px;
+    color: #fff;
+    background: rgba(13, 24, 39, .94);
+    font: 700 13px Arial, sans-serif;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  #kalyugRadioPanel {
+    position: fixed;
+    z-index: 39;
+    top: 108px;
+    right: 12px;
+    width: min(310px, calc(100vw - 24px));
+    padding: 14px;
+    border: 1px solid rgba(70, 220, 170, .45);
+    border-radius: 14px;
+    color: #f8fafc;
+    background: rgba(7, 13, 23, .96);
+    box-shadow: 0 12px 36px rgba(0,0,0,.45);
+    font: 14px Arial, sans-serif;
+    display: none;
+    pointer-events: auto;
+    touch-action: auto;
+    user-select: text;
+    backdrop-filter: blur(12px);
+  }
+  #kalyugRadioPanel.open { display: block; }
+  #kalyugRadioPanel * { box-sizing: border-box; }
+  #kalyugRadioPanel .kr-head {
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    margin-bottom:12px;
+  }
+  #kalyugRadioPanel .kr-title { font-weight:800; letter-spacing:1px; }
+  #kalyugRadioPanel .kr-live {
+    color:#4ade80; font-size:10px; font-weight:800; letter-spacing:.8px;
+  }
+  #kalyugRadioPanel label {
+    display:block; margin:10px 0 6px; color:#aebdce; font-size:11px;
+    font-weight:700; letter-spacing:.5px;
+  }
+  #kalyugRadioPanel select,
+  #kalyugRadioPanel button {
+    min-height:38px; border-radius:8px; font:inherit;
+  }
+  #kalyugRadioStation {
+    width:100%; padding:8px; color:#fff; background:#172437;
+    border:1px solid #40536a;
+  }
+  #kalyugRadioPanel .kr-controls {
+    display:flex; align-items:center; gap:8px; margin-top:12px;
+  }
+  #kalyugRadioPlay {
+    flex:1; border:0; color:#06130d; background:#4ade80;
+    font-weight:800; cursor:pointer;
+  }
+  #kalyugRadioStop {
+    padding:0 13px; border:1px solid #53657a; color:#fff;
+    background:#263449; cursor:pointer;
+  }
+  #kalyugRadioVolume { width:100%; accent-color:#4ade80; }
+  #kalyugRadioStatus {
+    min-height:30px; margin-top:10px; color:#aebdce;
+    font-size:11px; line-height:1.4;
+  }
+  #kalyugRadioSource {
+    display:inline-block; margin-top:6px; color:#86efac;
+    font-size:11px; text-decoration:underline;
+  }
+  @media (max-width:700px) {
+    #kalyugRadioToggle { top:58px; right:10px; padding:8px 10px; }
+    #kalyugRadioPanel { top:100px; right:10px; }
+  }
+</style>
+
+<button id="kalyugRadioToggle" type="button" aria-expanded="false" aria-controls="kalyugRadioPanel">📻 RADIO</button>
+<section id="kalyugRadioPanel" aria-label="Kalyug live radio player">
+  <div class="kr-head">
+    <span class="kr-title">KALYUG RADIO</span>
+    <span class="kr-live">● LIVE STATIONS</span>
+  </div>
+
+  <label for="kalyugRadioStation">HINDI RADIO STATION</label>
+  <select id="kalyugRadioStation">
+    <option value="vbs-bhopal">Vividh Bharati — Bhopal</option>
+    <option value="vividh-bharati">Vividh Bharati — National</option>
+  </select>
+
+  <div class="kr-controls">
+    <button id="kalyugRadioPlay" type="button">▶ PLAY</button>
+    <button id="kalyugRadioStop" type="button">■ STOP</button>
+  </div>
+
+  <label for="kalyugRadioVolume">VOLUME</label>
+  <input id="kalyugRadioVolume" type="range" min="0" max="1" step="0.05" value="0.65">
+  <div id="kalyugRadioStatus" role="status" aria-live="polite">Choose a station and press Play. Audio does not autoplay.</div>
+  <a id="kalyugRadioSource" href="https://akashvani.gov.in/radio/live.php" target="_blank" rel="noopener noreferrer">Official Akashvani station directory ↗</a>
+  <audio id="kalyugRadioAudio" preload="none" playsinline></audio>
+</section>
+
+<!-- HLS playback helper for browsers without native .m3u8 support. -->
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<script>
+(() => {
+  'use strict';
+
+  const toggle = document.getElementById('kalyugRadioToggle');
+  const panel = document.getElementById('kalyugRadioPanel');
+  const stationSelect = document.getElementById('kalyugRadioStation');
+  const playButton = document.getElementById('kalyugRadioPlay');
+  const stopButton = document.getElementById('kalyugRadioStop');
+  const volumeSlider = document.getElementById('kalyugRadioVolume');
+  const status = document.getElementById('kalyugRadioStatus');
+  const audio = document.getElementById('kalyugRadioAudio');
+
+  // Public station stream endpoints. Station availability can change at the broadcaster's end.
+  const stations = {
+    'vbs-bhopal': {
+      name: 'Vividh Bharati — Bhopal',
+      url: 'https://air.pc.cdn.bitgravity.com/air/live/pbaudio248/playlist.m3u8'
+    },
+    'vividh-bharati': {
+      name: 'Vividh Bharati — National',
+      url: 'https://d1tmej9eu7kw5c.cloudfront.net/146ed6ec6dea5a24/146ed6ec6dea5a24.m3u8'
+    }
+  };
+
+  let hls = null;
+  let selectedUrl = '';
+  let isPlaying = false;
+
+  function setStatus(message) {
+    status.textContent = message;
+  }
+
+  function destroyHls() {
+    if (hls) {
+      hls.destroy();
+      hls = null;
+    }
+  }
+
+  function stopRadio(updateMessage = true) {
+    audio.pause();
+    audio.removeAttribute('src');
+    audio.load();
+    destroyHls();
+    isPlaying = false;
+    playButton.textContent = '▶ PLAY';
+    if (updateMessage) setStatus('Radio stopped.');
+  }
+
+  async function startRadio() {
+    const station = stations[stationSelect.value];
+    if (!station) return;
+
+    stopRadio(false);
+    selectedUrl = station.url;
+    audio.volume = Number(volumeSlider.value);
+    setStatus('Connecting to ' + station.name + '…');
+
+    try {
+      if (audio.canPlayType('application/vnd.apple.mpegurl')) {
+        audio.src = station.url;
+      } else if (window.Hls && window.Hls.isSupported()) {
+        hls = new window.Hls({ enableWorker: true, lowLatencyMode: true });
+        await new Promise((resolve, reject) => {
+          let settled = false;
+          hls.on(window.Hls.Events.MEDIA_ATTACHED, () => {
+            if (hls) hls.loadSource(station.url);
+          });
+          hls.on(window.Hls.Events.MANIFEST_PARSED, () => {
+            if (!settled) { settled = true; resolve(); }
+          });
+          hls.on(window.Hls.Events.ERROR, (_event, data) => {
+            if (data && data.fatal && !settled) {
+              settled = true;
+              reject(new Error('Fatal HLS stream error'));
+            }
+          });
+          hls.attachMedia(audio);
+        });
+      } else {
+        setStatus('This browser cannot play HLS radio streams. Open the official station directory instead.');
+        return;
+      }
+
+      await audio.play();
+      isPlaying = true;
+      playButton.textContent = '❚❚ PAUSE';
+      setStatus('Playing: ' + station.name);
+    } catch (error) {
+      isPlaying = false;
+      playButton.textContent = '▶ PLAY';
+      setStatus('Could not start this stream. It may be temporarily offline or blocked by the broadcaster.');
+    }
+  }
+
+  toggle.addEventListener('click', () => {
+    const open = panel.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', String(open));
+  });
+
+  playButton.addEventListener('click', () => {
+    if (isPlaying && !audio.paused) {
+      audio.pause();
+      isPlaying = false;
+      playButton.textContent = '▶ PLAY';
+      setStatus('Paused. Press Play to resume.');
+    } else if (selectedUrl && (audio.src || hls)) {
+      audio.play().then(() => {
+        isPlaying = true;
+        playButton.textContent = '❚❚ PAUSE';
+        setStatus('Playing: ' + stations[stationSelect.value].name);
+      }).catch(() => startRadio());
+    } else {
+      startRadio();
+    }
+  });
+
+  stopButton.addEventListener('click', () => stopRadio());
+  stationSelect.addEventListener('change', () => {
+    if (isPlaying || selectedUrl) startRadio();
+    else setStatus('Selected ' + stations[stationSelect.value].name + '. Press Play to connect.');
+  });
+  volumeSlider.addEventListener('input', () => {
+    audio.volume = Number(volumeSlider.value);
+  });
+  audio.addEventListener('waiting', () => setStatus('Buffering live radio…'));
+  audio.addEventListener('playing', () => {
+    isPlaying = true;
+    playButton.textContent = '❚❚ PAUSE';
+  });
+  audio.addEventListener('error', () => {
+    if (selectedUrl) setStatus('Stream playback error. Try another station or the official directory.');
+  });
+
+  // Stop network audio when the page is being closed or refreshed.
+  window.addEventListener('pagehide', () => stopRadio(false));
+})();
+</script>
+
+</body>
+
+</html>
